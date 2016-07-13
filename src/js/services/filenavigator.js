@@ -42,6 +42,9 @@
 
         FileNavigator.prototype.refresh = function() {
             var self = this;
+            if (self.currentPath.length === 0) {
+                  self.currentPath = fileManagerConfig.currentPath || [];
+              }
             var path = self.currentPath.join('/');
             self.requesting = true;
             self.fileList = [];
@@ -55,7 +58,7 @@
                 self.requesting = false;
             });
         };
-        
+
         FileNavigator.prototype.buildTree = function(path) {
             var flatNodes = [], selectedNode = {};
 
@@ -76,7 +79,7 @@
                     }
                     parent.nodes.push({item: item, name: absName, nodes: []});
                 }
-                
+
                 parent.nodes = parent.nodes.sort(function(a, b) {
                     return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : a.name.toLowerCase() === b.name.toLowerCase() ? 0 : 1;
                 });
@@ -94,8 +97,8 @@
                     return n.name === path;
                 })[0];
             }
-
-            !this.history.length && this.history.push({name: '', nodes: []});
+            !this.history.length && this.history.push({ name: fileManagerConfig.currentPath ? fileManagerConfig.currentPath[0] : '', nodes: [] });
+            //!this.history.length && this.history.push({name: '', nodes: []});
             flatten(this.history[0], flatNodes);
             selectedNode = findNode(flatNodes, path);
             selectedNode && (selectedNode.nodes = []);

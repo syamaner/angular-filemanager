@@ -7,7 +7,7 @@
         var $storage = $window.localStorage;
         $scope.config = fileManagerConfig;
         $scope.reverse = false;
-        $scope.predicate = ['model.type', 'model.name'];        
+        $scope.predicate = ['model.type', 'model.name'];
         $scope.order = function(predicate) {
             $scope.reverse = ($scope.predicate[1] === predicate) ? !$scope.reverse : false;
             $scope.predicate[1] = predicate;
@@ -16,10 +16,11 @@
         $scope.fileNavigator = new FileNavigator();
         $scope.apiMiddleware = new ApiMiddleware();
         $scope.uploadFileList = [];
-        $scope.viewTemplate = $storage.getItem('viewTemplate') || 'main-icons.html';
+        $scope.viewTemplate = $storage.getItem('viewTemplate') || 'main-table.html';
         $scope.fileList = [];
         $scope.temps = [];
-
+        $scope.showModals={ newfolder: false, uploadfile: false };
+        $scope.accept= fileManagerConfig.accept || '*/*';
         $scope.$watch('temps', function() {
             if ($scope.singleSelection()) {
                 $scope.temp = $scope.singleSelection();
@@ -94,6 +95,8 @@
                 return;
             }
             $scope.temps = [item];
+            if(fileManagerConfig.singleClickSelection)
+              $scope.smartClick(item);
         };
 
         $scope.singleSelection = function() {
@@ -134,10 +137,10 @@
             if (item.isImage()) {
                 if ($scope.config.previewImagesInModal) {
                     return $scope.openImagePreview(item);
-                } 
+                }
                 return $scope.apiMiddleware.download(item, true);
             }
-            
+
             if (item.isEditable()) {
                 return $scope.openEditItem(item);
             }
@@ -165,11 +168,17 @@
         };
 
         $scope.modal = function(id, hide, returnElement) {
-            var element = $('#' + id);
-            element.modal(hide ? 'hide' : 'show');
-            $scope.apiMiddleware.apiHandler.error = '';
-            $scope.apiMiddleware.apiHandler.asyncSuccess = false;
-            return returnElement ? element : true;
+          //show / hide
+          $scope.showModals[id]=!hide;
+          var element = $('#' + id);
+
+          element.modal(hide ? 'hide' : 'show');
+          $scope.apiMiddleware.apiHandler.error = '';
+          $scope.apiMiddleware.apiHandler.asyncSuccess = false;
+          if (!hide) {
+              element.css('display', 'table');
+          }
+          return returnElement ? element : true;
         };
 
         $scope.modalWithPathSelector = function(id) {
@@ -281,7 +290,7 @@
             });
         };
 
-        $scope.move = function() {           
+        $scope.move = function() {
             var anyItem = $scope.singleSelection() || $scope.temps[0];
             if (anyItem && validateSamePath(anyItem)) {
                 $scope.apiMiddleware.apiHandler.error = $translate.instant('error_cannot_move_same_path');

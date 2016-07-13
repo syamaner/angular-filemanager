@@ -15,7 +15,7 @@
             </th>
             <th class="hidden-sm hidden-xs" ng-hide="config.hideDate">
                 <a href="" ng-click="order('model.date')">
-                    {{"date" | translate}}
+                    {{"date" |  date : config.dateFormat}}
                     <span class="sortorder" ng-show="predicate[1] === 'model.date'" ng-class="{reverse:reverse}"></span>
                 </a>
             </th>
@@ -57,7 +57,7 @@
                 </span>
             </td>
             <td class="hidden-sm hidden-xs" ng-hide="config.hideDate">
-                {{item.model.date | formatDate }}
+                {{item.model.date | date :  config.dateFormat}}
             </td>
             <td class="hidden-sm hidden-xs" ng-hide="config.hidePermissions">
                 {{item.model.perms.toCode(item.model.type === 'dir'?'d':'-')}}
