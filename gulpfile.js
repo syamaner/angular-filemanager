@@ -17,6 +17,9 @@ var tplPath = 'src/templates'; //must be same as fileManagerConfig.tplPath
 var jsFile = 'angular-filemanager.min.js';
 var cssFile = 'angular-filemanager.min.css';
 
+var jsFileDebug = 'angular-filemanager.js';
+var cssFileDebug = 'angular-filemanager.css';
+
 gulp.task('clean', function (cb) {
   del(dst + '/*', cb);
 });
@@ -32,6 +35,16 @@ gulp.task('cache-templates', function () {
     .pipe(gulp.dest(dst));
 });
 
+gulp.task('cache-templates-debug', function () {
+  return gulp.src(tplPath + '/*.html')
+    .pipe(templateCache(jsFileDebug, {
+      module: 'FileManagerApp',
+      base: function(file) {
+        return tplPath + '/' + path.basename(file.history);
+      }
+    }))
+    .pipe(gulp.dest(dst));
+});
 gulp.task('concat-uglify-js', ['cache-templates'], function() {
   return gulp.src([
     src + 'js/app.js',
@@ -39,7 +52,18 @@ gulp.task('concat-uglify-js', ['cache-templates'], function() {
       dst + '/' + jsFile
     ])
     .pipe(concat(jsFile))
-    .pipe(uglify())
+  //  .pipe(uglify())
+    .pipe(gulp.dest(dst));
+});
+
+gulp.task('concat-js', ['cache-templates-debug'], function() {
+  return gulp.src([
+    src + 'js/app.js',
+      src + 'js/*/*.js',
+      dst + '/' + jsFileDebug
+    ])
+    .pipe(concat(jsFileDebug))
+  //  .pipe(uglify())
     .pipe(gulp.dest(dst));
 });
 
@@ -50,11 +74,17 @@ gulp.task('minify-css', function() {
     .pipe(gulp.dest(dst));
 });
 
+gulp.task('concat-css', function() {
+  return gulp.src(src + 'css/*.css')
+    .pipe(concat(cssFileDebug))
+    .pipe(gulp.dest(dst));
+});
+
 gulp.task('lint', function () {
   return gulp.src([src + 'js/app.js', src + 'js/*/*.js'])
     .pipe(eslint({
       'rules': {
-          'quotes': [2, 'single'], 
+          'quotes': [2, 'single'],
           //'linebreak-style': [2, 'unix'],
           'semi': [2, 'always']
       },
@@ -73,3 +103,5 @@ gulp.task('lint', function () {
 
 gulp.task('default', ['concat-uglify-js', 'minify-css']);
 gulp.task('build', ['clean', 'lint', 'default']);
+
+gulp.task('build-debug', ['clean', 'lint', 'concat-js', 'concat-css']);
